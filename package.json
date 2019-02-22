@@ -7,8 +7,18 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Chatroom App",
   "dependencies": {
+    "mongodb": "^3.1.13",
     "socket.io": "^2.2.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FahKing/chat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FahKing/chat/issues"
+  },
+  "homepage": "https://github.com/FahKing/chat#readme"
 }

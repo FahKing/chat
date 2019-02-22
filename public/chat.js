@@ -1,30 +1,100 @@
-var socket = io.connect('http://localhost:4000/');
 
-//query DOM
-var message = document.getElementById('message');
-    handle = document.getElementById('handle');
-    btn = document.getElementById('send');
-    output = document.getElementById('output');
-    feedback = document.getElementById('feedback');
-    
-//Emit events
-    btn.addEventListener('click',function(){
-        socket.emit('chat',{
-            message: message.value,
-            handle: handle.value
-        });
-    });
+(function(){
+        var element = function(id){
+            return document.getElementById(id);
+        }
 
-    message.addEventListener('keypress',function(){
-        socket.emit('typing',handle.value);
-    });
+        // Get Elements
+        var status = element('status');
+        var messages = element('messages');
+        var textarea = element('textarea');
+        var username = element('username');
+        var clearBtn = element('clear');
+        var feedback = element('feedback');
 
-//Listen for events
-    socket.on('chat',function(data){
-        feedback.innerHTML = " ";
-        output.innerHTML += '<p><strong>' + data.handle + ': </strong>' + data.message + '</p>';
-    });
+        status.textContent = 'hello';
 
-    socket.on('typing',function(data){
-        feedback.innerHTML = '<p><em>' + data + ' is typing a message...</em></p>';
-    });
+        // Set default status
+        var statusDefault = status.textContent;
+
+        var setStatus = function(s){
+            // Set status
+            status.textContent = s;
+
+            if(s !== statusDefault){
+                var delay = setTimeout(function(){
+                    setStatus(statusDefault);
+                }, 4000);
+            }
+        }
+
+        // Connect to socket.io
+        var socket = io.connect('http://127.0.0.1:4000');
+
+        // Check for connection
+        if(socket !== undefined){
+            console.log('Connected to socket...');
+
+            // Handle Output
+            socket.on('output', function(data){
+                //console.log(data);
+                if(data.length){
+                    for(var x = 0;x < data.length;x++){
+                        // Build out message div
+                        var message = document.createElement('div');
+                        message.setAttribute('class', 'chat-message');
+                        message.textContent = data[x].name+": "+data[x].message;
+                        messages.insertBefore(message, messages.firstChild);
+                        messages.appendChild(message);                        
+                    }
+                }
+            });
+
+            // Get Status From Server
+            socket.on('status', function(data){
+                // get message status
+                setStatus((typeof data === 'object')? data.message : data);
+
+                // If status is clear, clear text
+                if(data.clear){
+                    textarea.value = '';
+                }
+            });
+
+            // Handle Input
+            textarea.addEventListener('keydown', function(event){
+                if(event.which === 13 && event.shiftKey == false){
+                    // Emit to server input
+                    socket.emit('input', {
+                        name:username.value,
+                        message:textarea.value
+                    });
+
+                    event.preventDefault();
+                }
+            })
+/*ตรงนี้้ */
+            //Lister for evens
+            socket.on('input',function(data){
+                feedback.innerHTML = "";
+                textarea.innerHTML += '<p><strong>' + data.textarea + ':</strong>' + data.username + '</p>'; 
+                username.value = "";
+            });
+/*ตรงนี้้ */
+            // Handle Chat Clear
+            clearBtn.addEventListener('click', function(){
+                socket.emit('clear');
+            });
+
+            // Clear Message
+            socket.on('cleared', function(){
+                messages.textContent = '';
+            });
+
+            socket.on('typing',function(data){
+                feedback.innerHTML = '<p><em>' + data + ' ' + 'is typing a message...</em></p>';
+            });
+        }
+
+ })();
+  
