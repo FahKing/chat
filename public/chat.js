@@ -1,4 +1,3 @@
-
 (function(){
         var element = function(id){
             return document.getElementById(id);
@@ -10,9 +9,6 @@
         var textarea = element('textarea');
         var username = element('username');
         var clearBtn = element('clear');
-        var feedback = element('feedback');
-
-        status.textContent = 'hello';
 
         // Set default status
         var statusDefault = status.textContent;
@@ -44,13 +40,16 @@
                         var message = document.createElement('div');
                         message.setAttribute('class', 'chat-message');
                         message.textContent = data[x].name+": "+data[x].message;
-                        messages.insertBefore(message, messages.firstChild);
-                        messages.appendChild(message);                        
+                        messages.appendChild(message); 
+
+                        var el = document.getElementById('messages'); 
+                        el.scrollTop = el.scrollHeight; //scrollTop คือ ตำแหน่งของ scrollbar, scrollHeight คือ ตำแหน่งสูงสุดของ scrollbar    
+                        //textarea.value = '';               
                     }
                 }
             });
 
-            // Get Status From Server
+            // Get status From Server
             socket.on('status', function(data){
                 // get message status
                 setStatus((typeof data === 'object')? data.message : data);
@@ -69,18 +68,10 @@
                         name:username.value,
                         message:textarea.value
                     });
-
                     event.preventDefault();
                 }
             })
-/*ตรงนี้้ */
-            //Lister for evens
-            socket.on('input',function(data){
-                feedback.innerHTML = "";
-                textarea.innerHTML += '<p><strong>' + data.textarea + ':</strong>' + data.username + '</p>'; 
-                username.value = "";
-            });
-/*ตรงนี้้ */
+
             // Handle Chat Clear
             clearBtn.addEventListener('click', function(){
                 socket.emit('clear');
@@ -91,10 +82,7 @@
                 messages.textContent = '';
             });
 
-            socket.on('typing',function(data){
-                feedback.innerHTML = '<p><em>' + data + ' ' + 'is typing a message...</em></p>';
-            });
         }
 
- })();
+})();
   
